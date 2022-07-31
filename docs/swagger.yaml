@@ -1,0 +1,154 @@
+basePath: /api/v1
+definitions:
+  main.Recipe:
+    properties:
+      id:
+        type: string
+      ingredients:
+        items:
+          type: string
+        type: array
+      instructions:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      publishedAt:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /recipes:
+    get:
+      consumes:
+      - application/json
+      description: Returns list of recipes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            items:
+              $ref: '#/definitions/main.Recipe'
+            type: array
+      summary: recipes listRecipes
+      tags:
+      - recipe
+    post:
+      consumes:
+      - application/json
+      description: create an rew recipe
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/main.Recipe'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+      summary: recipes newRecipe
+      tags:
+      - recipe
+  /recipes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing recipe
+      parameters:
+      - description: ID of the recipe
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/main.Recipe'
+        "404":
+          description: Invalid recipe ID
+          schema:
+            type: string
+      summary: recipes deleteRecipe
+      tags:
+      - recipe
+    put:
+      consumes:
+      - application/json
+      description: Update an existing recipe
+      parameters:
+      - description: ID of the recipe
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/main.Recipe'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "404":
+          description: Invalid recipe ID
+          schema:
+            type: string
+      summary: recipes updateRecipe
+      tags:
+      - recipe
+  /recipes/search:
+    get:
+      consumes:
+      - application/json
+      description: Search recipes based on tags
+      parameters:
+      - description: ID of recipe
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/main.Recipe'
+        "404":
+          description: Invalid recipe ID
+          schema:
+            type: string
+      summary: recipes findRecipe
+      tags:
+      - recipe
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
