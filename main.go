@@ -70,6 +70,7 @@ func NewRecipeHandler(c *gin.Context) {
 // @Accept       json
 // @Produce      application/json
 // @Param		 id path string true "ID of the recipe"
+// @Param		 recipe body Recipe true "Recipe Schema"
 // @Success      200  {object}  Recipe  "Successful operation"
 // @Failure      400  {string}  string	"Invalid input"
 // @Failure      404  {string}  string	"Invalid recipe ID"
@@ -153,7 +154,7 @@ func SearchRecipesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, listOfRecipes)
 }
 
-// SearchRecipes godoc
+// GetRecipe godoc
 // @Summary      recipes findRecipe
 // @Description  Search recipes based on tags
 // @Tags         recipe
