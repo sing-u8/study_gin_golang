@@ -45,6 +45,7 @@ func ListRecipesHandler(c *gin.Context) {
 // @Tags         recipe
 // @Accept       json
 // @Produce      application/json
+// @Param		 recipe body Recipe true "Recipe Schema"
 // @Success      200  {object}  Recipe  "Successful operation"
 // @Failure      400  {string}  string	"Invalid input"
 // @Router       /recipes [post]

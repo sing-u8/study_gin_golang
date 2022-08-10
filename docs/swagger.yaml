@@ -56,6 +56,13 @@ paths:
       consumes:
       - application/json
       description: create an rew recipe
+      parameters:
+      - description: Recipe Schema
+        in: body
+        name: recipe
+        required: true
+        schema:
+          $ref: '#/definitions/main.Recipe'
       produces:
       - application/json
       responses:

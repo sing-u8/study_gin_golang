@@ -62,6 +62,17 @@ const docTemplate = `{
                     "recipe"
                 ],
                 "summary": "recipes newRecipe",
+                "parameters": [
+                    {
+                        "description": "Recipe Schema",
+                        "name": "recipe",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.Recipe"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
