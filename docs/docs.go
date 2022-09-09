@@ -44,7 +44,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.Recipe"
+                                "$ref": "#/definitions/models.Recipe"
                             }
                         }
                     }
@@ -69,7 +69,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Recipe"
+                            "$ref": "#/definitions/models.Recipe"
                         }
                     }
                 ],
@@ -77,7 +77,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful operation",
                         "schema": {
-                            "$ref": "#/definitions/main.Recipe"
+                            "$ref": "#/definitions/models.Recipe"
                         }
                     },
                     "400": {
@@ -115,7 +115,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful operation",
                         "schema": {
-                            "$ref": "#/definitions/main.Recipe"
+                            "$ref": "#/definitions/models.Recipe"
                         }
                     },
                     "404": {
@@ -128,6 +128,42 @@ const docTemplate = `{
             }
         },
         "/recipes/{id}": {
+            "get": {
+                "description": "Get an one existing recipe",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recipe"
+                ],
+                "summary": "recipes get one Recipe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the recipe",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/models.Recipe"
+                        }
+                    },
+                    "404": {
+                        "description": "Invalid recipe ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Update an existing recipe",
                 "consumes": [
@@ -147,13 +183,22 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Recipe Schema",
+                        "name": "recipe",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Recipe"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Successful operation",
                         "schema": {
-                            "$ref": "#/definitions/main.Recipe"
+                            "$ref": "#/definitions/models.Recipe"
                         }
                     },
                     "400": {
@@ -195,7 +240,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successful operation",
                         "schema": {
-                            "$ref": "#/definitions/main.Recipe"
+                            "$ref": "#/definitions/models.Recipe"
                         }
                     },
                     "404": {
@@ -209,10 +254,11 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.Recipe": {
+        "models.Recipe": {
             "type": "object",
             "properties": {
                 "id": {
+                    "description": "` + "`" + `swaggerignore:\"true\"` + "`" + `",
                     "type": "string"
                 },
                 "ingredients": {
