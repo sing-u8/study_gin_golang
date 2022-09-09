@@ -37,7 +37,7 @@ func NewRecipesHandler(ctx context.Context, collection *mongo.Collection, redisC
 // @Tags         recipe
 // @Accept       json
 // @Produce      application/json
-// @Success      200  {array}  Recipe  "Successful operation"
+// @Success      200  {array}  models.Recipe  "Successful operation"
 // @Router       /recipes [get]
 func (handler *RecipesHandler) ListRecipesHandler(c *gin.Context) {
 	val, err := handler.redisClient.Get(handler.ctx, "recipes").Result()
@@ -77,8 +77,8 @@ func (handler *RecipesHandler) ListRecipesHandler(c *gin.Context) {
 // @Tags         recipe
 // @Accept       json
 // @Produce      application/json
-// @Param		 recipe body Recipe true "Recipe Schema"
-// @Success      200  {object}  Recipe  "Successful operation"
+// @Param		 recipe body models.Recipe true "Recipe Schema"
+// @Success      200  {object}  models.Recipe  "Successful operation"
 // @Failure      400  {string}  string	"Invalid input"
 // @Router       /recipes [post]
 func (handler *RecipesHandler) NewRecipeHandler(c *gin.Context) {
@@ -111,8 +111,8 @@ func (handler *RecipesHandler) NewRecipeHandler(c *gin.Context) {
 // @Accept       json
 // @Produce      application/json
 // @Param		 id path string true "ID of the recipe"
-// @Param		 recipe body Recipe true "Recipe Schema"
-// @Success      200  {object}  Recipe  "Successful operation"
+// @Param		 recipe body models.Recipe true "Recipe Schema"
+// @Success      200  {object}  models.Recipe  "Successful operation"
 // @Failure      400  {string}  string	"Invalid input"
 // @Failure      404  {string}  string	"Invalid recipe ID"
 // @Router       /recipes/{id} [put]
@@ -154,26 +154,46 @@ func (handler *RecipesHandler) UpdateRecipeHandler(c *gin.Context) {
 // @Accept       json
 // @Produce      application/json
 // @Param		 id path string true "ID of the recipe"
-// @Success      200  {object}  Recipe  "Successful operation"
+// @Success      200  {object}  models.Recipe  "Successful operation"
 // @Failure      404  {string}  string	"Invalid recipe ID"
 // @Router       /recipes/{id} [delete]
 func (handler *RecipesHandler) DeleteRecipeHandler(c *gin.Context) {
-	// id := c.Param("id")
-	// index := -1
-	// for i := 0; i < len(recipes); i++ {
-	// 	if recipes[i].ID == id {
-	// 		index = i
-	// 		break
-	// 	}
-	// }
-	// if index == -1 {
-	// 	c.JSON(http.StatusNotFound, gin.H{
-	// 		"error": "Recipe not found"})
-	// 	return
-	// }
-	// recipes = append(recipes[:index], recipes[index+1:]...)
-	// c.JSON(http.StatusOK, gin.H{
-	// 	"message": "Recipe has been deleted"})
+	id := c.Param("id")
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	_, err := handler.collection.DeleteOne(handler.ctx, bson.M{
+		"_id": objectId,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Recipe has been deleted"})
+}
+
+// GetOneRecipe godoc
+// @Summary      recipes get one Recipe
+// @Description  Get an one existing recipe
+// @Tags         recipe
+// @Accept       json
+// @Produce      application/json
+// @Param		 id path string true "ID of the recipe"
+// @Success      200  {object}  models.Recipe  "Successful operation"
+// @Failure      404  {string}  string	"Invalid recipe ID"
+// @Router       /recipes/{id} [get]
+func (handler *RecipesHandler) GetOneRecipeHandler(c *gin.Context) {
+	id := c.Param("id")
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	cur := handler.collection.FindOne(handler.ctx, bson.M{
+		"_id": objectId,
+	})
+	var recipe models.Recipe
+	err := cur.Decode(&recipe)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, recipe)
 }
 
 // SearchRecipes godoc
@@ -183,7 +203,7 @@ func (handler *RecipesHandler) DeleteRecipeHandler(c *gin.Context) {
 // @Accept       json
 // @Produce      application/json
 // @Param		 tag query string true "recipe tag"
-// @Success      200 {object} Recipe "Successful operation"
+// @Success      200 {object} models.Recipe "Successful operation"
 // @Router       /recipes/search [get]
 func (handler *RecipesHandler) SearchRecipesHandler(c *gin.Context) {
 	// tag := c.Query("tag")
@@ -210,7 +230,7 @@ func (handler *RecipesHandler) SearchRecipesHandler(c *gin.Context) {
 // @Accept       json
 // @Produce      application/json
 // @Param		 id path string true "ID of recipe"
-// @Success      200 {object} Recipe "Successful operation"
+// @Success      200 {object} models.Recipe "Successful operation"
 // @Failure      404  {string}  string	"Invalid recipe ID"
 // @Router       /recipes/search [get]
 func (handler *RecipesHandler) GetRecipeHandler(c *gin.Context) {

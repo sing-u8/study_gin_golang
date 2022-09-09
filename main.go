@@ -9,29 +9,17 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"golang.org/x/net/context"
 
-	"time"
-
 	"study_gin_golang/docs"
 	"study_gin_golang/handlers"
 
 	"github.com/gin-gonic/gin"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"github.com/go-redis/redis/v8"
 )
-
-type Recipe struct {
-	ID           primitive.ObjectID `json:"id" bson:"_id"` //`swaggerignore:"true"`
-	Name         string             `json:"name" bson:"name"`
-	Tags         []string           `json:"tags" bson:"tags"`
-	Ingredients  []string           `json:"ingredients" bson:"ingredients"`
-	Instructions []string           `json:"instructions" bson:"instructions"`
-	PublishedAt  time.Time          `json:"publishedAt" bson:"publishedAt"`
-}
 
 var recipesHandler *handlers.RecipesHandler
 
