@@ -12,8 +12,9 @@ import (
 	"study_gin_golang/docs"
 	"study_gin_golang/handlers"
 
+	"github.com/gin-contrib/sessions"
+	redisStore "github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -21,6 +22,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+var authHandler *handlers.AuthHandler
 var recipesHandler *handlers.RecipesHandler
 
 func init() {
@@ -53,18 +55,18 @@ func init() {
 
 	collection := client.Database(os.Getenv(
 		"MONGO_DATABASE")).Collection("recipes")
-
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})
-
 	status := redisClient.Ping(ctx)
-	fmt.Println(status)
-
+	fmt.Println("status: ", status)
 	recipesHandler = handlers.NewRecipesHandler(ctx, collection, redisClient)
 
+	collectionUsers := client.Database(os.Getenv(
+		"MONGO_DATABASE")).Collection("users")
+	authHandler = handlers.NewAuthHandler(ctx, collectionUsers)
 }
 
 // @title           Swagger Example API
@@ -95,17 +97,27 @@ func main() {
 
 	router := gin.Default()
 
+	store, _ := redisStore.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
+	router.Use(sessions.Sessions("recipes_api", store))
 	// api handlers v1
 	v1 := router.Group("/api/v1")
 	{
+		v1.POST("/signin", authHandler.SignInHandler)
+		v1.POST("/signout", authHandler.SignOutHandler)
+		v1.POST("/refresh", authHandler.RefreshHandler)
+
 		recipes := v1.Group("/recipes")
 		{
-			recipes.POST("", recipesHandler.NewRecipeHandler)
 			recipes.GET("", recipesHandler.ListRecipesHandler)
-			recipes.PUT(":id", recipesHandler.UpdateRecipeHandler)
-			recipes.DELETE(":id", recipesHandler.DeleteRecipeHandler)
-			recipes.GET("search", recipesHandler.SearchRecipesHandler)
-			recipes.GET(":id", recipesHandler.GetRecipeHandler)
+		}
+		authorized_recipes := v1.Group("/recipes")
+		authorized_recipes.Use(authHandler.AuthMiddleware())
+		{
+			authorized_recipes.POST("", recipesHandler.NewRecipeHandler)
+			authorized_recipes.PUT(":id", recipesHandler.UpdateRecipeHandler)
+			authorized_recipes.DELETE(":id", recipesHandler.DeleteRecipeHandler)
+			authorized_recipes.GET("search", recipesHandler.SearchRecipesHandler)
+			authorized_recipes.GET(":id", recipesHandler.GetRecipeHandler)
 		}
 	}
 
