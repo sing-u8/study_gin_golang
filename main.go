@@ -96,6 +96,7 @@ func main() {
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	router := gin.Default()
+	router.SetTrustedProxies([]string{"127.0.0.1"})
 
 	store, _ := redisStore.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
 	router.Use(sessions.Sessions("recipes_api", store))
@@ -111,7 +112,7 @@ func main() {
 			recipes.GET("", recipesHandler.ListRecipesHandler)
 		}
 		authorized_recipes := v1.Group("/recipes")
-		authorized_recipes.Use(authHandler.AuthMiddleware())
+		authorized_recipes.Use(authHandler.Auth0Middleware())
 		{
 			authorized_recipes.POST("", recipesHandler.NewRecipeHandler)
 			authorized_recipes.PUT(":id", recipesHandler.UpdateRecipeHandler)
@@ -123,5 +124,6 @@ func main() {
 
 	// swagger handlers
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	router.Run()
+	router.RunTLS(":443", "certs/localhost.crt", "certs/localhost.key")
+	// router.Run()
 }

@@ -9,12 +9,14 @@ import (
 	"study_gin_golang/models"
 	"time"
 
+	"github.com/auth0-community/go-auth0"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/xid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"gopkg.in/square/go-jose.v2"
 )
 
 type AuthHandler struct {
@@ -41,21 +43,6 @@ func NewAuthHandler(ctx context.Context, collection *mongo.Collection) *AuthHand
 
 func (handler *AuthHandler) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		/*
-			tokenValue := c.GetHeader("Authorization")
-			claims := &Claims{}
-			tkn, err := jwt.ParseWithClaims(tokenValue, claims,
-				func(token *jwt.Token) (interface{}, error) {
-					return []byte(os.Getenv("JWT_SECRET")), nil
-				})
-			if err != nil {
-				c.AbortWithStatus(http.StatusUnauthorized)
-			}
-			if tkn == nil || !tkn.Valid {
-				c.AbortWithStatus(http.StatusUnauthorized)
-			}
-			c.Next()
-		*/
 		session := sessions.Default(c)
 		sessionToken := session.Get("token")
 		fmt.Println("auth middleware : ", sessionToken)
@@ -69,6 +56,37 @@ func (handler *AuthHandler) AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
+func (handler *AuthHandler) Auth0Middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var auth0Domain = "https://" + os.Getenv("AUTH0_DOMAIN") + "/"
+		client := auth0.NewJWKClient(auth0.JWKClientOptions{
+			URI: auth0Domain + ".well-known/jwks.json",
+		}, nil)
+		configuration := auth0.NewConfiguration(client, []string{os.Getenv("AUTH0_API_IDENTIFIER")}, auth0Domain, jose.RS256)
+		validator := auth0.NewValidator(configuration, nil)
+
+		_, err := validator.ValidateRequest(c.Request)
+
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+// SignIn godoc
+// @Summary      /siginin
+// @Description  Login with username and password
+// @Tags         auth
+// @Accept       json
+// @Produce      application/json
+// @Param		 password query string true "password"
+// @Param		 username query string true "username"
+// @Success      200  {string}  string  "Successful operation"
+// @Failure      401  {string}  string	"Invalid input"
+// @Router       /auth [get]
 func (handler *AuthHandler) SignInHandler(c *gin.Context) {
 
 	var user models.User
@@ -131,6 +149,16 @@ func (handler *AuthHandler) SignOutHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Signed out..."})
 }
 
+// Refresh godoc
+// @Summary      /refresh
+// @Description  Get new token in exchange for an old one
+// @Tags         auth
+// @Accept       json
+// @Produce      application/json
+// @Success      200  {string}  string  "Successful operation"
+// @Failure      400  {string}  string	"Token is new and doesn't need a refresh"
+// @Failure      401  {string}  string	"Invalid credentials"
+// @Router       /auth [post]
 func (handler *AuthHandler) RefreshHandler(c *gin.Context) {
 	tokenValue := c.GetHeader("Authorization")
 	claims := &Claims{}

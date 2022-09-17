@@ -204,7 +204,7 @@ func (handler *RecipesHandler) GetOneRecipeHandler(c *gin.Context) {
 // @Produce      application/json
 // @Param		 tag query string true "recipe tag"
 // @Success      200 {object} models.Recipe "Successful operation"
-// @Router       /recipes/search [get]
+// @Router       /recipes/search/:tag [get]
 func (handler *RecipesHandler) SearchRecipesHandler(c *gin.Context) {
 	// tag := c.Query("tag")
 	// listOfRecipes := make([]models.Recipe, 0)
@@ -232,7 +232,7 @@ func (handler *RecipesHandler) SearchRecipesHandler(c *gin.Context) {
 // @Param		 id path string true "ID of recipe"
 // @Success      200 {object} models.Recipe "Successful operation"
 // @Failure      404  {string}  string	"Invalid recipe ID"
-// @Router       /recipes/search [get]
+// @Router       /recipes/recipe/:id [get]
 func (handler *RecipesHandler) GetRecipeHandler(c *gin.Context) {
 	// id := c.Param("id")
 	// for i := 0; i < len(recipes); i++ {
