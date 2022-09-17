@@ -36,6 +36,58 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /auth:
+    get:
+      consumes:
+      - application/json
+      description: Login with username and password
+      parameters:
+      - description: password
+        in: query
+        name: password
+        required: true
+        type: string
+      - description: username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            type: string
+        "401":
+          description: Invalid input
+          schema:
+            type: string
+      summary: /siginin
+      tags:
+      - auth
+    post:
+      consumes:
+      - application/json
+      description: Get new token in exchange for an old one
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            type: string
+        "400":
+          description: Token is new and doesn't need a refresh
+          schema:
+            type: string
+        "401":
+          description: Invalid credentials
+          schema:
+            type: string
+      summary: /refresh
+      tags:
+      - auth
   /recipes:
     get:
       consumes:
@@ -161,7 +213,7 @@ paths:
       summary: recipes updateRecipe
       tags:
       - recipe
-  /recipes/search:
+  /recipes/recipe/:id:
     get:
       consumes:
       - application/json
@@ -183,6 +235,27 @@ paths:
           description: Invalid recipe ID
           schema:
             type: string
+      summary: recipes findRecipe
+      tags:
+      - recipe
+  /recipes/search/:tag:
+    get:
+      consumes:
+      - application/json
+      description: Search recipes based on tags
+      parameters:
+      - description: recipe tag
+        in: query
+        name: tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/models.Recipe'
       summary: recipes findRecipe
       tags:
       - recipe
